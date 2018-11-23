@@ -1,0 +1,35 @@
+DisablePathCorrection: false
+EnablePathEscape: false
+FireMethodNotAllowed: true
+DisableBodyConsumptionOnUnmarshal: true
+TimeFormat: Mon, 01 Jan 2006 15:04:05 GMT
+Charset: UTF-8
+
+
+debug: true
+clusterId: static
+clusterTimer: 60
+serverId : s1
+http:
+  local: http://localhost:7001
+  proxy: http://localhost:7002
+  #static server port
+  static: 7002
+
+fs:
+  root: "testfs"
+  #GB
+  ratedSpace : 100
+  meta: meta.db
+  tasks: tasks.db
+  notify: notify.db
+
+# server id: local or proxy
+backups:
+  s2: http://localhost:7003
+
+# redis for select server
+redis:
+  addr: test.iqidao.com:50002
+  db: 0
+  password: 
