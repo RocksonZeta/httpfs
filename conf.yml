@@ -30,6 +30,6 @@ backups:
 
 # redis for select server
 redis:
-  addr: test.iqidao.com:50002
+  addr: localhost:50002
   db: 0
   password: 
