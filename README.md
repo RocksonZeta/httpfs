@@ -14,7 +14,7 @@ direct fs base on http
 # Roadmap
 - [x] distribute storage,write and read.
 - [x] basic file handler. image crop and resize ,read zip file directly. compress video.
-- [] Auto backup.
+- [ ] Auto backup.
 
 ## dependencies
 ```
