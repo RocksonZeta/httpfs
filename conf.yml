@@ -13,7 +13,7 @@ serverId : s1
 http:
   local: http://localhost:7001
   proxy: http://localhost:7002
-  #static server port
+  #static server port,0:disabled
   static: 7002
 
 fs:
@@ -30,6 +30,6 @@ backups:
 
 # redis for select server
 redis:
-  addr: localhost:6379
+  addr: test.iqidao.com:50002
   db: 0
   password: 

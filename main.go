@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"httpfs/base"
+	"httpfs/base/log"
 	"httpfs/route"
 	"httpfs/service/cluster"
 	"httpfs/util/stringutil"
@@ -40,13 +41,19 @@ func startHttpFsServer() {
 
 	route.Init(app)
 	cluster.InitCluster()
-	app.Run(iris.Addr(":"+strconv.Itoa(base.Config.Http.LocalUrl.Port)), iris.WithConfiguration(conf))
+	err := app.Run(iris.Addr(":"+strconv.Itoa(base.Config.Http.LocalUrl.Port)), iris.WithConfiguration(conf))
+	if err != nil {
+		log.Log.Error(err)
+	}
 }
 
 func startStaticServer() {
 	app := iris.Default()
 	app.StaticWeb("/", base.Config.Fs.Root)
-	app.Run(iris.Addr(":"+strconv.Itoa(base.Config.Http.Static)), iris.WithConfiguration(iris.YAML("./conf.yml")))
+	err := app.Run(iris.Addr(":"+strconv.Itoa(base.Config.Http.Static)), iris.WithConfiguration(iris.YAML("./conf.yml")))
+	if err != nil {
+		log.Log.Error(err)
+	}
 }
 
 func parseCmdOptions() {

@@ -1,8 +1,8 @@
 from db.datasource import DataSource
 
-dataSource = DataSource(host="test.iqidao.com",
+dataSource = DataSource(host="localhost",
 						user='root',
-						password='6plzHiJKdUMlFZ',
+						password='hello',
 						db="good",
 						port=43122,
 						)
