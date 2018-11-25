@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-	"zipx"
 
+	"github.com/RocksonZeta/zipx"
 	"github.com/go-cmd/cmd"
 )
 

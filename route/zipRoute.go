@@ -6,8 +6,8 @@ import (
 	"httpfs/base"
 	"path/filepath"
 	"strings"
-	"zipx"
 
+	"github.com/RocksonZeta/zipx"
 	"github.com/kataras/iris"
 )
 

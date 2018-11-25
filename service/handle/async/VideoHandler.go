@@ -22,10 +22,10 @@ type VideoCompressParam struct {
 	VideoId          int
 }
 
-func (v VideoHandler) Do(method, params string, taskId int, finishChan chan TaskReslt) error {
+func (v VideoHandler) Do(method, params string, taskId int) error {
 	log.Log.Debug("VideoHandler.Do - method:", method, ",params:", params, ",taskId:", taskId)
 	if method == "CompressDash" {
-		return v.CompressDash(params, taskId, finishChan)
+		return v.CompressDash(params, taskId)
 	}
 
 	return errors.New("VideoHandler no such method:" + method)
@@ -72,7 +72,8 @@ func (v VideoHandler) Do(method, params string, taskId int, finishChan chan Task
 // 	return err
 
 // }
-func (v VideoHandler) CompressDash(params string, taskId int, finishChan chan TaskReslt) error {
+func (v VideoHandler) CompressDash(params string, taskId int) error {
+	log.Log.Debug("VideoHandler.CompressDash - param:", params)
 	var param VideoCompressParam
 	err := json.Unmarshal([]byte(params), &param)
 	if err != nil {
@@ -90,6 +91,10 @@ func (v VideoHandler) CompressDash(params string, taskId int, finishChan chan Ta
 	}()
 
 	finished := <-statusChan
+	err = finished.Error
+	if nil != finished.Error {
+		log.Log.Error("task executed error, param:", param, ",taskId:", taskId, " exit:", finished.Exit)
+	}
 	for _, line := range finished.Stdout {
 		log.Log.Info(line)
 	}
@@ -99,6 +104,5 @@ func (v VideoHandler) CompressDash(params string, taskId int, finishChan chan Ta
 	d, f := filepath.Split(param.File)
 	i := strings.Index(f, ".")
 	meta.GetMeta().RegisterDir(d, "^"+f[0:i])
-	finishChan <- TaskReslt{TaskId: taskId, State: finished.Exit}
-	return nil
+	return err
 }

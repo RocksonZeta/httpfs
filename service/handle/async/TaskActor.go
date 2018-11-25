@@ -98,12 +98,18 @@ func (t *TaskActor) next() error {
 		}
 		if h, ok := handlers[task.Module]; ok {
 			t.taskCount++
-			err := h.Do(task.Method, task.Args, task.Id, t.FinishChan)
+			err := h.Do(task.Method, task.Args, task.Id)
 			if err != nil {
 				log.Log.Error("exec task error.", err)
 			}
+			go func() {
+				var state = 0
+				if err != nil {
+					state = 1
+				}
+				t.FinishChan <- TaskReslt{TaskId: task.Id, State: state}
+			}()
 		}
-		log.Log.Debug("handlers:", handlers, handlers[task.Module], task)
 		return nil
 	})
 	// return nil
@@ -150,16 +156,17 @@ func (t *TaskActor) onFinish(taskId, state int) error {
 		var task Task
 		err := json.Unmarshal(bs, &task)
 		if err != nil {
+			log.Log.Error(err)
 			return err
 		}
+		defer b.Delete(itob(task.Id))
 		task.State = state
 		f := tx.Bucket([]byte("task_finished"))
 		buf, err := json.Marshal(task)
 		if err != nil {
-			return err
+			log.Log.Error(err)
 		}
-		f.Put(itob(task.Id), buf)
-		return b.Delete(itob(task.Id))
+		return f.Put(itob(task.Id), buf)
 	})
 }
 

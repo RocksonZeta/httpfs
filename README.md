@@ -1,6 +1,10 @@
 # httpfs
 direct fs base on http
 
+# Installation
+1. ffmpeg, x264
+2. python3, pip3 install pymysql redis
+
 
 # Basic Idea
 1. store file on fs directly.
@@ -42,3 +46,5 @@ govendor fetch github.com/disintegration/imaging
 #cmd
 govendor fetch github.com/go-cmd/cmd
 ```
+
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
