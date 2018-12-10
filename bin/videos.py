@@ -278,8 +278,8 @@ class Mp4(object):
 		# 	cmd1 += " -acodec copy"
 		if not self.isH264():
 			cmd1 += " -vcodec h264"
-		# else :
-		# 	cmd1 += " -vcodec copy"
+		else :
+			cmd1 += " -vcodec copy"
 		cmd1 += ' {output}'
 		cmd2 = cmd1
 		r = []
@@ -382,7 +382,7 @@ def runCb(cmd  , stdoutCb=None , stderrCb=None, timeout=None,throwError=True,cwd
 	cmd = cmd
 	if cmdStrCb:
 		cmdStrCb(cmd)
-	# print("run:"+cmd)
+	print("run:"+cmd)
 	p = subprocess.Popen(cmd,stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE , universal_newlines=True ,shell=True,cwd=cwd)
 	# stdout = []
 	# stderr = []

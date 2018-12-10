@@ -33,6 +33,7 @@ args =None
 
 # 20：资源已删除，不存在
 
+transcoding = 3
 transOk = 4
 transFail = 13
 
@@ -92,7 +93,7 @@ def parseArgs() :
 
 @db.ds()
 def start(vid ,con=None ):
-	v = {"state":1,"tsStartTime":int(time.time())}
+	v = {"state":transcoding,"tsStartTime":int(time.time())}
 	con.update("VideoMedia",v ,vid)
 
 @db.ds()
@@ -161,7 +162,7 @@ if '__main__' == __name__:
 	m = handle(vfile)
 	finish(m, args.vid)
 
-	#python bin/mp4.py -f /video/0/0/9o39m9wuvi/4uie3br1wj.mp4 -root /Users/ququ/projects/go/src/httpfs/testfs -rk video1/progress -cs static:s1 -vid 1
+	#python3 bin/mp4.py -f /video/0/0/9o39m9wuvi/4uie3br1wj.mp4 -root /Users/ququ/projects/go/src/httpfs/testfs -rk video1/progress -cs static:s1 -vid 1
 	
 	
 	# print(args.f)
