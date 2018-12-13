@@ -88,7 +88,7 @@ func (h *ImageHandler) CropResize(param ImageTransformParam) ([]string, error) {
 			return nil, err
 		}
 		sizes := param.Resize
-		err = trans.Resize(sizes[j][0], sizes[j][1]).Save(absFile)
+		err = trans.ResizeKeepRatio(sizes[j][0], sizes[j][1]).Save(absFile)
 		if err != nil {
 			return nil, err
 		}

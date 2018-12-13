@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"image"
 	"io"
+	"math"
 	"os"
 
 	"github.com/disintegration/imaging"
@@ -46,6 +47,32 @@ func (t *ImageTransform) Crop(x, y, w, h int) *ImageTransform {
 func (t *ImageTransform) Resize(w, h int) *ImageTransform {
 	t.Im = imaging.Resize(t.Im, w, h, imaging.Linear)
 	return t
+}
+func (t *ImageTransform) ResizeKeepRatio(w, h int) *ImageTransform {
+	ow, oh := t.Size()
+	rw := float64(w) / float64(ow)
+	rh := float64(h) / float64(oh)
+	x, y := 0, 0
+	nw, nh := w, h
+	if math.Abs(rw-1) < math.Abs(rh-1) { //选择压缩比最小的 ，
+		nh = int(float64(oh) * rw)
+		y = (h - nh) / 2
+		if y < 0 {
+			y = -y
+		}
+	} else {
+		nw = int(float64(ow) * rh)
+		x = (w - nw) / 2
+		if x < 0 {
+			x = -x
+		}
+	}
+	t.Im = imaging.Resize(t.Im, nw, nh, imaging.Linear)
+	t.Crop(x, y, w, h)
+	return t
+}
+func (t *ImageTransform) Size() (int, int) {
+	return t.Im.Bounds().Dx(), t.Im.Bounds().Dy()
 }
 func (t *ImageTransform) Buffer() (*bytes.Buffer, error) {
 	buff := new(bytes.Buffer)
