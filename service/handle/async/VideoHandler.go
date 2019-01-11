@@ -27,6 +27,9 @@ func (v VideoHandler) Do(method, params string, taskId int) error {
 	if method == "CompressDash" {
 		return v.CompressDash(params, taskId)
 	}
+	if method == "Mp4" {
+		return v.Mp4(params, taskId)
+	}
 
 	return errors.New("VideoHandler no such method:" + method)
 }
@@ -72,15 +75,55 @@ func (v VideoHandler) Do(method, params string, taskId int) error {
 // 	return err
 
 // }
+func (v VideoHandler) Mp4(params string, taskId int) error {
+	return v.method("Mp4", params, taskId)
+}
 func (v VideoHandler) CompressDash(params string, taskId int) error {
+	log.Log.Debug("VideoHandler.CompressDash - param:", params)
+	return v.method("CompressDash", params, taskId)
+	// var param VideoCompressParam
+	// err := json.Unmarshal([]byte(params), &param)
+	// if err != nil {
+	// 	log.Log.Error(err)
+	// 	return err
+	// }
+	// cs := base.Config.ClusterId + ":" + base.Config.ServerId
+	// c := cmd.NewCmd("python3", "bin/mp4.py", "-f", param.File, "-rk", param.ProgressRedisKey, "-vid", strconv.Itoa(param.VideoId), "-root", base.AbsRoot(), "-cs", cs)
+	// statusChan := c.Start()
+	// // ticker := time.NewTicker(3 * time.Second)
+
+	// go func() {
+	// 	<-time.After(24 * time.Hour)
+	// 	log.Log.Warn("Task run timeout. >24h")
+	// 	c.Stop()
+	// }()
+
+	// finished := <-statusChan
+	// err = finished.Error
+	// if nil != finished.Error {
+	// 	log.Log.Error("task executed error, param:", param, ",taskId:", taskId, " exit:", finished.Exit)
+	// }
+	// for _, line := range finished.Stdout {
+	// 	log.Log.Info(line)
+	// }
+	// for _, line := range finished.Stderr {
+	// 	log.Log.Error(line)
+	// }
+	// d, f := filepath.Split(param.File)
+	// i := strings.Index(f, ".")
+	// meta.GetMeta().RegisterDir(d, "^"+f[0:i])
+	// return err
+}
+func (v VideoHandler) method(method, params string, taskId int) error {
 	log.Log.Debug("VideoHandler.CompressDash - param:", params)
 	var param VideoCompressParam
 	err := json.Unmarshal([]byte(params), &param)
 	if err != nil {
+		log.Log.Error(err)
 		return err
 	}
 	cs := base.Config.ClusterId + ":" + base.Config.ServerId
-	c := cmd.NewCmd("python3", "bin/mp4.py", "-f", param.File, "-rk", param.ProgressRedisKey, "-vid", strconv.Itoa(param.VideoId), "-root", base.AbsRoot(), "-cs", cs)
+	c := cmd.NewCmd("python3", "bin/mp4.py", "-m", method, "-f", param.File, "-rk", param.ProgressRedisKey, "-vid", strconv.Itoa(param.VideoId), "-root", base.AbsRoot(), "-cs", cs)
 	statusChan := c.Start()
 	// ticker := time.NewTicker(3 * time.Second)
 

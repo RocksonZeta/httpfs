@@ -20,10 +20,6 @@ func TestStat(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, stat.IsDir)
 }
-func TestAbsPath(t *testing.T) {
-	_, err := fs.AbsPath(".")
-	assert.Nil(t, err)
-}
 func TestExecPath(t *testing.T) {
 	state := fs.Exec(1*time.Second, "ls")
 	fmt.Println(state)

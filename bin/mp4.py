@@ -33,7 +33,13 @@ args =None
 
 # 20：资源已删除，不存在
 
-transcoding = 3
+state_mp4ing = 2
+state_mp4_ok = 3
+state_compressing = 4
+state_compress_ok = 5
+
+state_video_review=1
+
 transOk = 4
 transFail = 13
 
@@ -73,13 +79,14 @@ def handle(videoFile):
 	timer = Timer(m)
 	timer.start()
 	m.compressDash()
-	m.snapshot(3)
+	# m.snapshot(3)
 	timer.stop =True
 	# print("result:" , json.dumps(m.result))
 	return m
 
 def parseArgs() :
 	parser = argparse.ArgumentParser(description='Video compress args.')
+	parser.add_argument("-m",required=True , help="method name") # file path
 	parser.add_argument("-f",required=True , help="relative file path") # file path
 	# parser.add_argument("-ra")
 	# parser.add_argument("-rp",default="")
@@ -92,12 +99,28 @@ def parseArgs() :
 	args = parser.parse_args()
 
 @db.ds()
-def start(vid ,con=None ):
-	v = {"state":transcoding,"tsStartTime":int(time.time())}
+def start(vid ,state ,con=None ):
+	v = {"state":state,"tsStartTime":int(time.time())}
 	con.update("VideoMedia",v ,vid)
 
 @db.ds()
-def finish(m , vid ,con=None ):
+def finishMp4( videoFile , vid ,con=None ):
+	v = {"state":state_mp4_ok}
+	m = videos.Mp4(videoFile , psizes , vbrUppers, abrUpper)
+	rawMp4 = m.toMp4()
+	m.captureMp4(3)
+	capture1 = m.result.get("capture1")
+	capture2 = m.result.get("capture2")
+	capture3 = m.result.get("capture3")
+	v['hfCapture1']=hfLink(capture1)
+	v['hfCapture2']=hfLink(capture2)
+	v['hfCapture3']=hfLink(capture3)
+	v['hfRawMp4Review'] = hfLink(rawMp4)
+	v['tsEndTime'] = int(time.time())
+	con.update("VideoMedia",v ,vid)
+	con.q("update Video set duration=%s,state=%s where mediaId=%s" ,(m.duration,state_video_review, vid))
+@db.ds()
+def finishCompress(m , vid ,con=None ):
 	'''
 	VideoMedia state,duration,rawHeight,rawWidth,fileName,rawSize,Mp41080Size,Mp4720Size,Mp4480Size
 	hfRaw,hfRawMp4,hfMp41080,720,480,Mpd,hfCapture1,2,3,
@@ -108,7 +131,7 @@ def finish(m , vid ,con=None ):
 	print("result:" , m.result)
 	v = {}
 	if m.isResultOk():
-		v["state"]=transOk
+		v["state"]=state_compress_ok
 		v["duration"] = m.duration
 		v['rawHeight'] = m.height
 		v['rawWidth'] = m.width
@@ -117,9 +140,9 @@ def finish(m , vid ,con=None ):
 		p720 = m.result.get(720)
 		p480 = m.result.get(480)
 		mpd = m.result.get("mpd")
-		capture1 = m.result.get("capture1")
-		capture2 = m.result.get("capture2")
-		capture3 = m.result.get("capture3")
+		# capture1 = m.result.get("capture1")
+		# capture2 = m.result.get("capture2")
+		# capture3 = m.result.get("capture3")
 		
 		v['hfRawMp4'] = hfLink(raw)
 		v['hfMp41080'] = hfLink(p1080)
@@ -134,9 +157,9 @@ def finish(m , vid ,con=None ):
 		if p480:
 			v['mp4480Size'] = os.path.getsize(p480)
 		v['hfMpd']=hfLink(mpd)
-		v['hfCapture1']=hfLink(capture1)
-		v['hfCapture2']=hfLink(capture2)
-		v['hfCapture3']=hfLink(capture3)
+		# v['hfCapture1']=hfLink(capture1)
+		# v['hfCapture2']=hfLink(capture2)
+		# v['hfCapture3']=hfLink(capture3)
 		v['tsEndTime'] = int(time.time())
 	else :
 		v["state"]=transFail
@@ -144,6 +167,14 @@ def finish(m , vid ,con=None ):
 	print("videoId:" , vid)
 	print("video:" , v)
 	con.update("VideoMedia",v ,vid)
+
+def CompressDash(vid , vfile ) :
+	start(vid,state_compressing)
+	m = handle(vfile)
+	finishCompress(m, vid)
+def Mp4(vid , vfile ) :
+	start(vid,state_mp4ing)
+	finishMp4(vfile, vid)
 
 if '__main__' == __name__:
 	parseArgs()
@@ -158,11 +189,14 @@ if '__main__' == __name__:
 	if not os.path.exists(vfile):
 		print("no such file:"+vfile)
 		sys.exit(2)
-	start(args.vid)
-	m = handle(vfile)
-	finish(m, args.vid)
+	if args.m == "CompressDash":
+		CompressDash(args.vid ,vfile)
+	elif args.m=="Mp4":
+		Mp4(args.vid ,vfile)
+	else:
+		print("no such method:" + args.m)
 
-	#python3 bin/mp4.py -f /video/0/0/9o39m9wuvi/4uie3br1wj.mp4 -root /Users/ququ/projects/go/src/httpfs/testfs -rk video1/progress -cs static:s1 -vid 1
+	#python3 bin/mp4.py -m Mp4 -f /video/0/0/9o39m9wuvi/4uie3br1wj.mp4 -root /Users/ququ/projects/go/src/httpfs/testfs -rk video1/progress -cs static:s1 -vid 1
 	
 	
 	# print(args.f)

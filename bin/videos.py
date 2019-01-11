@@ -25,7 +25,8 @@ class Mp4(object):
 		self.media = media
 		self.sizes = sizes
 		self.vbrUppers = vbrUppers
-		self.vbrUppersList = sorted(list(vbrUppers.items()) ,reverse=True )
+		if vbrUppers :
+			self.vbrUppersList = sorted(list(vbrUppers.items()) ,reverse=True )
 		self.abrUpper = abrUpper
 		self.brLower = brLower
 		self.heightLower =heightLower
@@ -55,6 +56,8 @@ class Mp4(object):
 		self.abr = int(self.streams['audio']['bit_rate'])
 		self.fileSize = int(self.format['size'])
 		self.duration = float(self.format['duration'])
+		self.vcodec = self.streams['video']['codec_name']
+		self.acodec = self.streams['audio']['codec_name']
 		v = self.streams['video']
 		if 'nb_frames' in v:
 			self.nb_frames = int(v['nb_frames'])
@@ -316,10 +319,27 @@ class Mp4(object):
 	def compressDash(self):
 		self.dash(*self.compress())
 
+	def isMp4(self):
+		return self.isH264() and self.isAac() and self.format['format_name'].lower().find("mp4")!=-1
+	def toMp4(self):
+		r = self.media
+		if not self.isMp4():
+			r = toMp4(self.media,self.streams,self.stdoutCb,self.stderrCb)
+		self.result["mp4"] = r
+		return r
 	def snapshot(self , n):
 		v = self.result.get(720)
 		if not v :
 			v = self.result.get(self.sizes[-1][1])
+		if not v :
+			return
+			
+		for i in range(1,n+1) :
+			img = os.path.join(self.dirpath , self.name+str(i)+".jpg")
+			snapshot(v , img , random.randint(0,int(self.duration)))
+			self.result["capture"+str(i)] =img
+	def captureMp4(self , n):
+		v = self.result["mp4"]
 		if not v :
 			return
 			
@@ -486,12 +506,12 @@ def toMp4(media ,streams,stdoutCb=None,stderrCb=None):
 	cmd = "ffmpeg -i {media} "
 	if streams['video']['codec_name']!='h264' :
 		cmd += " -vcodec h264"
-	# else :
-	# 	cmd +=" -vcodec copy"
+	else :
+		cmd +=" -vcodec copy"
 	if streams['audio']['codec_name']!='aac' :
 		cmd +=" -acodec aac"
-	# else :
-	# 	cmd +=" -vcodec copy"
+	else :
+		cmd +=" -acodec copy"
 	if ext==".mp4":
 		return media
 	cmd += " -y {output}"
@@ -500,10 +520,17 @@ def toMp4(media ,streams,stdoutCb=None,stderrCb=None):
 	return name+".mp4"
 
 
-# if '__main__' == __name__:
+if '__main__' == __name__:
 
-# 	psizes =[[1920,1080],[1280,720],[640,480]]
-# 	m = Mp4("/Users/ququ/Movies/test1/1.mp4" , psizes)
+	psizes =[[1920,1080],[1280,720],[640,480]]
+	m = Mp4("/Users/ququ/Movies/test2/1.flv" , psizes)
+	print(m.streams)
+	print(m.format)
+	print(m.isMp4())
+	m = Mp4("/Users/ququ/Movies/test1/1_1.mp4" , psizes)
+	print(m.streams)
+	print(m.format)
+	print(m.isMp4())
 # 	m.compress()
 	# m.compressDash()
 	# m.dash("/Users/ququ/Movies/test4/mal052_lec01_1.mp4","/Users/ququ/Movies/test4/mal052_lec01_2.mp4","/Users/ququ/Movies/test4/mal052_lec01_3.mp4")
