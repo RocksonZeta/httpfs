@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/RocksonZeta/zipx"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 )
 
 // /zip

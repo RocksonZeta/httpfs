@@ -13,8 +13,8 @@ import (
 	"syscall"
 
 	"github.com/hanwen/go-fuse/fuse"
-	"github.com/kataras/iris"
-	"github.com/kataras/iris/context"
+	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/context"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -35,7 +35,7 @@ func startHttpFsServer() {
 		}
 	})
 	app.RegisterView(iris.HTML("./views", ".html"))
-	app.StaticWeb("/static", "./static")
+	app.HandleDir("/static", "./static")
 
 	conf := iris.YAML("./conf.yml")
 
@@ -49,7 +49,7 @@ func startHttpFsServer() {
 
 func startStaticServer() {
 	app := iris.Default()
-	app.StaticWeb("/", base.Config.Fs.Root)
+	app.HandleDir("/", base.Config.Fs.Root)
 	err := app.Run(iris.Addr(":"+strconv.Itoa(base.Config.Http.Static)), iris.WithConfiguration(iris.YAML("./conf.yml")))
 	if err != nil {
 		log.Log.Error(err)

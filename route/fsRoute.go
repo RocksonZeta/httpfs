@@ -6,7 +6,7 @@ import (
 	"httpfs/service/meta"
 	"path/filepath"
 
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 )
 
 // /fs
