@@ -6,7 +6,7 @@ import (
 	"httpfs/service/handle"
 	"httpfs/service/handle/async"
 
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 )
 
 // /call/module/method
